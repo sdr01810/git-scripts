@@ -1,0 +1,3 @@
+:
+
+exec wop git stash "$@"

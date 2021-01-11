@@ -1,0 +1,3 @@
+:
+
+exec vwp git status "$@"

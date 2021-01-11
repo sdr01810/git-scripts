@@ -1,0 +1,32 @@
+--- git-svn.~1~	2011-09-04 00:29:42.000000000 -0400
++++ git-svn	2012-08-01 18:50:14.000000000 -0400
+@@ -4160,24 +4160,25 @@
+ 
+ # returns true if a given path is inside a ".git" directory
+ sub in_dot_git {
+ 	$_[0] =~ m{(?:^|/)\.git(?:/|$)};
+ }
+ 
+ # return value: 0 -- don't ignore, 1 -- ignore
+ sub is_path_ignored {
+ 	my ($self, $path) = @_;
+ 	return 1 if in_dot_git($path);
+-	return 1 if defined($self->{ignore_regex}) &&
+-	            $path =~ m!$self->{ignore_regex}!;
+-	return 0 unless defined($_ignore_regex);
+-	return 1 if $path =~ m!$_ignore_regex!o;
++	return 1 if defined($self->{ignore_regex}) && $path =~ m!$self->{ignore_regex}!;
++	return 1 if defined($_ignore_regex) && $path =~ m!$_ignore_regex!o;
++	if( $path !~ m{^(?:trunk|branches|tags)(?:/int5011|$)} ) { #HACK: srogers
++		print STDERR "OOPS! pattern: <<$self->{ignore_regex}>>; path: <<$path>>\n";
++	}
+ 	return 0;
+ }
+ 
+ sub set_path_strip {
+ 	my ($self, $path) = @_;
+ 	$self->{path_strip} = qr/^\Q$path\E(\/|$)/ if length $path;
+ }
+ 
+ sub open_root {
+ 	{ path => '' };

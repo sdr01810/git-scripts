@@ -63,7 +63,7 @@ function date_time_from_seconds_since_unix_epoch() { # [ value ]
 	' ${value};
 }
 
-function git_commit_honoring_mtime() {( [ git_commit_arg ... ]
+function git_commit_honoring_mtime() {( # [ git_commit_arg ... ]
 
 	local mtime_of_commit_set ; mtime_of_commit_set=$(
 
@@ -145,44 +145,56 @@ function staged_git_change_lines_from_commit_porcelain() { # [ git_commit_arg ..
 
 	git commit --porcelain -z "$@" | 
 
-	staged_git_change_lines_from_commit_porcelain_v1_lines
-}
-
-function staged_git_change_lines_from_commit_porcelain_v1_lines() { #
-
-	(egrep '^[A-Z]' || :) | # only changes that would be committed
-
-	staged_git_change_lines_from_status_porcelain_v1_lines
+	staged_git_change_lines_from_status_porcelain_v1_lines commit
 }
 
 function staged_git_change_lines_from_status_porcelain() { # [ git_status_arg ... ]
 
 	git status --porcelain -z "$@" |
 
-	staged_git_change_lines_from_status_porcelain_v1_lines
+	staged_git_change_lines_from_status_porcelain_v1_lines status
 }
 
-function staged_git_change_lines_from_status_porcelain_v1_lines() { #
+function staged_git_change_lines_from_status_porcelain_v1_lines() { # [ mode ]
 
-	(egrep -v '^#' || :) | # omit porcelain header lines
+	local mode="${1:-status}" ; [ $# -lt 1 ] || shift 1
 
-	perl -0 -ne '
+	# input format is specified by git-status(1)
 
-		# format specified by git-status(1)
+	perl -0 -e '
 
-		exit 2 unless m#^(.)(.) (.*)$#;
+		my $mode = shift;
 
-		my ($op_index, $op_work_tree, $pn_current, $pn_original) = ($1, $2, $3, "");
+		while ( <> ) {
 
-		print "$op_index\n$op_work_tree\n$pn_current\n";
+			next if m<^#>; # skip header lines
 
-		if ( $op_index =~ m#^[CR]$# || $op_work_tree =~ m#^[CR]$# ) {
+			if (! m<^(.)(.) (.*)$>) {
 
-			exit 2 if eof;  $pn_original = <>;
+				print STDERR "Malformed git porcelain line: $_\n";
+				exit 2;
+			}
+
+			my ($op_index, $op_work_tree, $pn_current, $pn_original) = ($1, $2, $3, "");
+
+			next if ($mode eq "commit" && $op_index !~ m<^[A-Z?]>);
+
+			print "$op_index\n$op_work_tree\n$pn_current\n";
+
+			if ( $op_index =~ m<^[CR]$> || $op_work_tree =~ m<^[CR]$> ) {
+
+				if (eof) {
+					print STDERR "Malformed git porcelain line (missing original file): $_\n";
+					exit 2;
+				}
+
+				$pn_original = <>;
+			}
+
+			print "$pn_original\n";
 		}
 
-		print "$pn_original\n";
-	';
+	' "${mode:?}"
 }
 
 ##

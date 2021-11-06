@@ -16,3 +16,4 @@ egrep -v '^${USER}\W(attic)\b' |
 
 egrep -v '\.(anchor|bl\d+|ss\d+|ref|trash)$'
 
+#^-- FIXME: align semantics with git-ls-active-topic-branches(1sdr)

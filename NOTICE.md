@@ -11,9 +11,16 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 
-This code base has the following third-party source code dependencies:
+The master copy of this code base can be found here:
 
-- Some functions have been copied from `snippets--sh` by Stephen D. Rogers
-```
-  <https://github.com/sdr01810/snippets--sh.git>
-```
+    https://github.com/sdr01810/git-scripts.git
+
+It has the following third-party source code dependencies:
+
+- Some build files have been copied from `archetype--sh`:
+
+      https://github.com/sdr01810/archetype--sh.git
+
+- Some functions have been copied from `snippets--sh`:
+
+      https://github.com/sdr01810/snippets--sh.git

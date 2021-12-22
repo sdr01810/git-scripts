@@ -63,7 +63,7 @@ function date_time_from_seconds_since_unix_epoch() { # [ value ]
 	' ${value};
 }
 
-function git_commit_honoring_mtime() {( # [ git_commit_arg ... ]
+function git_commit_honoring_mtime() { # [ git_commit_arg ... ]
 
 	local mtime_of_commit_set ; mtime_of_commit_set=$(
 
@@ -86,11 +86,14 @@ function git_commit_honoring_mtime() {( # [ git_commit_arg ... ]
 	export GIT_COMMITTER_DATE="${date_from_mtime:?}"
 
 	git commit "$@"
-)}
+}
 
-function mtime_lines_from_staged_git_change_lines() { # ...
+function mtime_lines_from_staged_git_change_lines() {( # ...
 
 	local op_index op_work_tree pn_current pn_original
+
+	cd "$(git rev-parse --show-toplevel)"
+	#^-- pathnames in change lines are relative to the top-level of the work tree
 
 	while true ; do
 
@@ -108,7 +111,7 @@ function mtime_lines_from_staged_git_change_lines() { # ...
 				pn=${pn_original}
 				;;
 
-			(*|'')
+			(*)
 				[[ -z ${pn_current} ]] ||
 
 				pn=$(dirname "${pn_current:?}")
@@ -116,14 +119,14 @@ function mtime_lines_from_staged_git_change_lines() { # ...
 			esac
 			;;
 
-		(*|'')
+		(*)
 			pn=${pn_current}
 			;;
 		esac
 
 		[[ -z ${pn} ]] || mtime_of_file "${pn:?}"
 	done
-}
+)}
 
 function mtime_of_file() { # file_pn
 
@@ -157,7 +160,7 @@ function staged_git_change_lines_from_status_porcelain() { # [ git_status_arg ..
 
 function staged_git_change_lines_from_status_porcelain_v1_lines() { # [ mode ]
 
-	local mode="${1:-status}" ; [ $# -lt 1 ] || shift 1
+	local mode="${1:?}" ; [ $# -lt 1 ] || shift 1
 
 	# input format is specified by git-status(1)
 
@@ -177,7 +180,7 @@ function staged_git_change_lines_from_status_porcelain_v1_lines() { # [ mode ]
 
 			my ($op_index, $op_work_tree, $pn_current, $pn_original) = ($1, $2, $3, "");
 
-			next if ($mode eq "commit" && $op_index !~ m<^[A-Z?]>);
+			next if ($mode eq "commit" && $op_index !~ m<^[A-Z]$>);
 
 			print "$op_index\n$op_work_tree\n$pn_current\n";
 

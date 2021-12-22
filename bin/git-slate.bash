@@ -9,6 +9,11 @@ git_slate_without_pager() { # ...
 
 	slate
 
+	(set -x ; wop git describe --long --tags) |&
+		sed -e 's#^fatal: No names found.*#No tags found#' || :
+
+	bl
+
 	(set -x ; wop git ls-active-topic-branches)
 
 	bl

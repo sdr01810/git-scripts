@@ -1,4 +1,4 @@
 ## To Do
 
-- Nothing yet
+- Extract functions into `libexec/`.
 
